@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "RoamFX",
+    "slug": "roamfx",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "roamfx",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f8f6f0"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.roamfx.mobile"
+    },
+    "android": {
+      "package": "app.roamfx.mobile"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e5509c45-1086-46bf-ad7a-39cc89f72f59"
+      }
+    }
+  }
+}

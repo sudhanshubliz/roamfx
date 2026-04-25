@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RoamFX">
+  <rect width="512" height="512" rx="104" fill="#0c7378"/>
+  <path d="M110 332c54-10 88-43 104-99l14-50c4-14 23-16 31-4l31 48 56-95c8-14 29-8 29 8v220c0 12-10 22-22 22H132c-15 0-25-13-22-27l0-23Z" fill="#fff"/>
+  <path d="M154 318h168v36H154z" fill="#f2b84b"/>
+  <path d="M126 151c56-28 114-35 174-20 17 4 32 11 47 20" fill="none" stroke="#f2b84b" stroke-width="28" stroke-linecap="round"/>
+  <path d="m322 132 59 20-46 42" fill="none" stroke="#f2b84b" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

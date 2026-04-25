@@ -163,6 +163,25 @@ Expected Render URLs after Blueprint creation:
 - Backend: `https://roamfx-backend.onrender.com`
 - Swagger: `https://roamfx-backend.onrender.com/swagger-ui.html`
 
+## Mobile Investor Demo
+
+RoamFX now ships as an installable mobile PWA. Once the Render frontend is live, open the frontend URL on a phone and add it to the home screen.
+
+Android:
+
+1. Open `https://roamfx-frontend.onrender.com` in Chrome.
+2. Tap Install app or Add to Home screen.
+
+iOS:
+
+1. Open `https://roamfx-frontend.onrender.com` in Safari.
+2. Tap Share.
+3. Tap Add to Home Screen.
+
+The PWA includes a manifest, service worker, offline fallback, app icons, and an install prompt. It keeps the product compliance-safe: all exchange and leftover-currency flows continue to route through verified authorised partners.
+
+An Expo WebView wrapper is scaffolded in `mobile/roamfx-expo` for the next native beta phase.
+
 ## Demo Users
 
 - `traveller@roamfx.app` / `password123`

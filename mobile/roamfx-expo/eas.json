@@ -1,0 +1,23 @@
+{
+  "cli": {
+    "version": ">= 13.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_ROAMFX_URL": "https://roamfx-frontend.onrender.com"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_ROAMFX_URL": "https://roamfx-frontend.onrender.com"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
