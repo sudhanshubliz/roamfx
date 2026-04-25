@@ -182,6 +182,23 @@ The PWA includes a manifest, service worker, offline fallback, app icons, and an
 
 An Expo WebView wrapper is scaffolded in `mobile/roamfx-expo` for the next native beta phase.
 
+## Free Deployment Alternative
+
+If Render asks for paid infrastructure, use a split free demo stack:
+
+1. **Northflank Sandbox** for backend + database. It currently advertises 2 free services and 1 free database, which fits `roamfx-backend` plus Postgres for an investor demo.
+2. **Cloudflare Pages Free** for the PWA frontend. Build command: `npm run build:static`; output directory: `out`; root directory: `frontend`.
+3. Set `NEXT_PUBLIC_API_URL` in Cloudflare Pages to the public Northflank backend URL.
+4. Set backend environment variables in Northflank:
+   - `DATABASE_URL`
+   - `DATABASE_USERNAME`
+   - `DATABASE_PASSWORD`
+   - `JWT_SECRET`
+   - `CORS_ALLOWED_ORIGINS=https://<your-cloudflare-pages-domain>`
+   - `AI_PROVIDER=mock`
+
+Cloudflare Pages is a good PWA host because it includes free SSL, static hosting, previews, and high bandwidth limits. Vercel Hobby is also technically free, but Vercel describes Hobby as personal/non-commercial, so use it carefully for an investor-facing startup demo.
+
 ## Demo Users
 
 - `traveller@roamfx.app` / `password123`
