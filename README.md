@@ -139,6 +139,30 @@ Frontend variables:
 | --- | --- | --- |
 | `NEXT_PUBLIC_API_URL` | Browser-visible backend URL | `http://localhost:8080` |
 
+## Deployment
+
+The repository includes:
+
+- `.github/workflows/ci.yml` for backend tests and frontend builds.
+- `.github/workflows/deploy-render.yml` for Render deploy hooks after CI passes.
+- `render.yaml` for a Render Blueprint with frontend, backend, and PostgreSQL.
+
+Render setup:
+
+1. Create a new Render Blueprint from this GitHub repository.
+2. Review `render.yaml`, especially the database plan and service names.
+3. Set production-safe environment variables, including `JWT_SECRET` and `CORS_ALLOWED_ORIGINS`.
+4. After services are created, add GitHub repository secrets:
+   - `RENDER_BACKEND_DEPLOY_HOOK_URL`
+   - `RENDER_FRONTEND_DEPLOY_HOOK_URL`
+5. Future pushes to `main` run CI first, then call Render deploy hooks.
+
+Expected Render URLs after Blueprint creation:
+
+- Frontend: `https://roamfx-frontend.onrender.com`
+- Backend: `https://roamfx-backend.onrender.com`
+- Swagger: `https://roamfx-backend.onrender.com/swagger-ui.html`
+
 ## Demo Users
 
 - `traveller@roamfx.app` / `password123`
