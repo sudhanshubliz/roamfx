@@ -1,0 +1,2 @@
+import { PageTemplate } from "@/components/page-template";
+export default function Page() { return <PageTemplate title="Verified forex partners" description="Search by city, currency, delivery, and rating. Public listing only includes VERIFIED partners." items={["List/map toggle","Verified partner badges","Opening hours and fulfilment modes","Distance sorting placeholder","Partner reviews","Suspicious rate warning"]} />; }

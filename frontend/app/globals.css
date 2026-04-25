@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 42 33% 97%;
+  --foreground: 218 37% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 218 37% 13%;
+  --primary: 184 82% 26%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 39 91% 58%;
+  --secondary-foreground: 218 37% 13%;
+  --muted: 42 22% 91%;
+  --muted-foreground: 217 14% 42%;
+  --accent: 174 52% 90%;
+  --accent-foreground: 184 82% 18%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 42 18% 84%;
+  --input: 42 18% 84%;
+  --ring: 184 82% 26%;
+}
+
+* { border-color: hsl(var(--border)); }
+body { background: hsl(var(--background)); color: hsl(var(--foreground)); letter-spacing: 0; }
+a, button, input, select, textarea { outline-color: hsl(var(--ring)); }

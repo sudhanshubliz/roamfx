@@ -1,0 +1,2 @@
+import { PageTemplate } from "@/components/page-template";
+export default function Page() { return <PageTemplate title="Sell leftover currency" description="Declare leftover currency and route it into an authorised partner buy-back booking. No user-to-user meetup flow is available." items={["Declare currency","Select verified partner","Upload declaration if needed","Reserve buy-back quote","Partner reviews request","Complete through partner"]} />; }

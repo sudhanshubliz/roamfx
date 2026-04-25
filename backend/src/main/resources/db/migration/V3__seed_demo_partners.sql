@@ -1,0 +1,5 @@
+INSERT INTO partners(id, business_name, license_type, license_number, verification_status, address, city, state, country, latitude, longitude, contact_phone, contact_email, opening_hours, supports_pickup, supports_delivery, supports_cash_payment, supports_digital_payment, rating)
+VALUES
+('11111111-1111-1111-1111-111111111111','Delhi Forex Hub','FFMC','FFMC-DLH-1001','VERIFIED','Connaught Place','Delhi','Delhi','India',28.6315,77.2167,'+91-11-40000000','ops@delhiforex.example','10:00-19:00',true,true,true,true,4.7),
+('22222222-2222-2222-2222-222222222222','Mumbai Travel Money','AD_CATEGORY_II','AD2-MUM-2044','VERIFIED','Bandra Kurla Complex','Mumbai','Maharashtra','India',19.0676,72.8677,'+91-22-40000000','rates@mumbaitravelmoney.example','09:30-18:30',true,false,false,true,4.5),
+('33333333-3333-3333-3333-333333333333','Bengaluru Global Forex','TRAVEL_FOREX_PARTNER','TFP-BLR-8871','PENDING','Indiranagar','Bengaluru','Karnataka','India',12.9784,77.6408,'+91-80-40000000','hello@blrglobalforex.example','10:00-18:00',true,true,true,true,0);

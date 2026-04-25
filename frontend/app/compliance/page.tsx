@@ -1,0 +1,2 @@
+import { PageTemplate } from "@/components/page-template";
+export default function Page() { return <PageTemplate title="Safety and compliance" description="RoamFX avoids direct P2P exchange and routes all transactions through verified authorised partners." items={["No unlicensed P2P cash meetups","Cash blocked at INR equivalent >= 50000","KYC checklist for high-value travel forex","Only verified partners in search","Document metadata review","Audit logs for sensitive actions"]} />; }

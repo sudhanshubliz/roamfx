@@ -1,0 +1,2 @@
+import { PageTemplate } from "@/components/page-template";
+export default function Page() { return <PageTemplate title="Community tips" description="Destination tips, questions, alerts, and leftover currency requests that are routed to authorised buy-back bookings." items={["Travel money tips","Destination questions","Rate alerts","Leftover request routing","Flagging placeholder","No P2P exchange"]} />; }

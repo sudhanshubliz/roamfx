@@ -1,0 +1,2 @@
+import { PageTemplate } from "@/components/page-template";
+export default function Page() { return <PageTemplate title="How it works" description="Compare verified partner rates, reserve a short rate lock, complete KYC when required, and fulfil through the selected authorised partner." items={["Search city and currency","Compare transparent total cost","Reserve rate for 30 minutes","Upload travel/KYC documents","Wait for partner confirmation","Pickup, delivery, or store visit"]} />; }

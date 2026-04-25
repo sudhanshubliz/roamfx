@@ -1,0 +1,2 @@
+import { PageTemplate } from "@/components/page-template";
+export default function Page() { return <PageTemplate allow={["TRAVELLER"]} title="Traveller dashboard" description="Search forex, compare partners, create bookings, upload documents, sell leftover currency, and view confirmations." items={["Search forex","Compare rates","Create booking","My bookings","Upload KYC documents","Sell leftover currency"]} />; }
