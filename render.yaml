@@ -3,7 +3,8 @@ previews:
 
 databases:
   - name: roamfx-postgres
-    plan: free
+    plan: basic-256mb
+    region: singapore
     databaseName: roamfx
     user: roamfx
     postgresMajorVersion: "16"
@@ -12,7 +13,7 @@ services:
   - type: web
     name: roamfx-backend
     runtime: docker
-    plan: free
+    plan: starter
     region: singapore
     rootDir: backend
     autoDeployTrigger: checksPass
@@ -54,7 +55,7 @@ services:
   - type: web
     name: roamfx-frontend
     runtime: docker
-    plan: free
+    plan: starter
     region: singapore
     rootDir: frontend
     autoDeployTrigger: checksPass
