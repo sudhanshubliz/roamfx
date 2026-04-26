@@ -1,0 +1,97 @@
+name: Expo Mobile
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      build_profile:
+        description: EAS build profile
+        required: true
+        default: hosted-preview
+        type: choice
+        options:
+          - preview
+          - hosted-preview
+          - ios-simulator
+          - production
+      platform:
+        description: Platform to build
+        required: true
+        default: android
+        type: choice
+        options:
+          - android
+          - ios
+          - all
+      run_build:
+        description: Run EAS build after publishing update
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: expo-mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update:
+    name: Publish EAS Update
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile/roamfx-expo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile/roamfx-expo/package-lock.json
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: npm ci
+      - name: Validate Expo config
+        run: npx expo config --type public
+      - name: Publish OTA update
+        run: eas update --branch preview --message "GitHub ${GITHUB_SHA}" --non-interactive
+
+  android-build:
+    name: Build Android Preview
+    needs: update
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.run_build == true)
+    defaults:
+      run:
+        working-directory: mobile/roamfx-expo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile/roamfx-expo/package-lock.json
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: npm ci
+      - name: Build installable app
+        run: |
+          PROFILE="${{ github.event_name == 'workflow_dispatch' && inputs.build_profile || 'hosted-preview' }}"
+          PLATFORM="${{ github.event_name == 'workflow_dispatch' && inputs.platform || 'android' }}"
+          eas build --platform "$PLATFORM" --profile "$PROFILE" --non-interactive
+
+  note:
+    name: Install Note
+    needs: [update, android-build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain install behavior
+        run: |
+          echo "Expo update published to the preview branch when the update job succeeds."
+          echo "EAS build artifacts are available on the Expo project build page."
+          echo "Apps cannot be silently installed on user devices from GitHub Actions; testers install with the EAS build link or QR code."

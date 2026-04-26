@@ -189,6 +189,31 @@ The PWA includes a manifest, service worker, offline fallback, app icons, and an
 
 An Expo WebView wrapper is scaffolded in `mobile/roamfx-expo` for the next native beta phase.
 
+### Expo Mobile CI/CD
+
+GitHub Actions includes `.github/workflows/expo-mobile.yml`.
+
+On every push to `main` it:
+
+1. Validates the Expo app config.
+2. Publishes an EAS Update to the `preview` branch.
+3. Builds an installable Android preview APK through EAS.
+
+Manual workflow dispatch can build Android, iOS simulator, or all platforms using one of the configured EAS profiles.
+
+Required GitHub secret:
+
+```text
+EXPO_TOKEN
+```
+
+Install behavior:
+
+- EAS Update is applied by already-installed compatible builds when the app starts and checks for updates.
+- Android preview builds create an install link/QR in Expo.
+- Physical iOS install builds require Apple signing credentials; use the `ios-simulator` profile until Apple Developer Program credentials are configured.
+- No CI system can silently install an app on a user's phone. Testers install via the Expo build link, QR code, TestFlight, Play internal testing, or an MDM platform.
+
 ## Free Deployment Alternative
 
 If Render asks for paid infrastructure, use a split free demo stack:
