@@ -22,7 +22,7 @@ app:
   allowedOrigins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
   rateLockMinutes: ${RATE_LOCK_MINUTES:30}
   suspiciousDeviationPercent: ${SUSPICIOUS_DEVIATION_PERCENT:8}
-  aiProvider: ${AI_PROVIDER:mock}
+  aiProvider: ${AI_PROVIDER:auto}
 logging:
   level:
     org.springframework.security: INFO

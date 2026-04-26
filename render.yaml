@@ -47,7 +47,7 @@ services:
       - key: SUSPICIOUS_DEVIATION_PERCENT
         value: 8
       - key: AI_PROVIDER
-        value: mock
+        value: auto
 
   - type: web
     name: roamfx-frontend

@@ -131,7 +131,14 @@ Backend variables:
 | `CORS_ALLOWED_ORIGINS` | Comma-separated frontend origins | `http://localhost:3000` |
 | `RATE_LOCK_MINUTES` | Rate reservation window | `30` |
 | `SUSPICIOUS_DEVIATION_PERCENT` | Rate deviation warning threshold | `8` |
-| `AI_PROVIDER` | Travel-money advisor provider: `mock`, `openai`, `bedrock`, or `vertex` | `mock` |
+| `AI_PROVIDER` | Travel-money advisor provider: `auto`, `mock`, `openai`, `google`, `anthropic`, `groq`, `deepseek`, `grok`, or `openrouter` | `auto` |
+| `OPENAI_API_KEY` / `OPENAI_MODEL` | Optional OpenAI provider key/model | empty / `gpt-4o-mini` |
+| `GOOGLE_API_KEY` / `GOOGLE_MODEL` | Optional Google Gemini provider key/model | empty / `gemini-1.5-flash` |
+| `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` | Optional Anthropic provider key/model | empty / `claude-3-5-haiku-latest` |
+| `GROQ_API_KEY` / `GROQ_MODEL` | Optional Groq provider key/model | empty / `llama-3.1-8b-instant` |
+| `DEEPSEEK_API_KEY` / `DEEPSEEK_MODEL` | Optional DeepSeek provider key/model | empty / `deepseek-chat` |
+| `GROK_API_KEY` / `GROK_MODEL` | Optional xAI Grok provider key/model | empty / `grok-2-latest` |
+| `OPENROUTER_API_KEY` / `OPENROUTER_MODEL` | Optional OpenRouter provider key/model | empty / `openai/gpt-4o-mini` |
 
 Frontend variables:
 
@@ -195,7 +202,8 @@ If Render asks for paid infrastructure, use a split free demo stack:
    - `DATABASE_PASSWORD`
    - `JWT_SECRET`
    - `CORS_ALLOWED_ORIGINS=https://<your-cloudflare-pages-domain>`
-   - `AI_PROVIDER=mock`
+   - `AI_PROVIDER=auto`
+   - one or more AI keys, such as `OPENAI_API_KEY`, `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `DEEPSEEK_API_KEY`, `GROK_API_KEY`, or `OPENROUTER_API_KEY`
 
 Cloudflare Pages is a good PWA host because it includes free SSL, static hosting, previews, and high bandwidth limits. Vercel Hobby is also technically free, but Vercel describes Hobby as personal/non-commercial, so use it carefully for an investor-facing startup demo.
 
@@ -219,7 +227,7 @@ Cloudflare Pages is a good PWA host because it includes free SSL, static hosting
 
 ## AI Provider Architecture
 
-The travel money assistant uses `TravelMoneyAdvisor` as its provider interface. The default `MockTravelMoneyAdvisor` is deterministic and safe for local development. Placeholder implementations exist for `OpenAiTravelMoneyAdvisor`, `BedrockTravelMoneyAdvisor`, and `VertexAiTravelMoneyAdvisor`; each uses the shared `TravelMoneyPromptTemplate` and must return the same typed response contract after real provider integration.
+The travel money assistant uses `TravelMoneyAdvisor` as its provider interface. `AutoTravelMoneyAdvisor` routes requests to the first available configured provider and falls back to the deterministic `MockTravelMoneyAdvisor` if no key exists or a provider fails. Supported env-based providers are OpenAI, Google Gemini, Anthropic, Groq, DeepSeek, xAI Grok, and OpenRouter. Placeholder classes remain for AWS Bedrock and Vertex AI enterprise integrations.
 
 The prompt template explicitly prohibits illegal or unsafe guidance, unlicensed peer-to-peer exchange, and user-to-user cash meetups. It instructs providers to recommend verified authorised partners and include a disclaimer that rates, fees, KYC requirements, and local rules can change.
 
