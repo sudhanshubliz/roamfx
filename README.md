@@ -233,7 +233,11 @@ The prompt template explicitly prohibits illegal or unsafe guidance, unlicensed 
 
 ## Screenshot Placeholders
 
-Add product screenshots here after running the app locally:
+Investor showcase screenshot:
+
+![RoamFX mobile traveller dashboard](docs/screenshots/dashboard.png)
+
+Additional product screenshots to capture after deployment:
 
 | Screen | Placeholder |
 | --- | --- |
