@@ -7,7 +7,13 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_ROAMFX_URL": "https://roamfx-frontend.onrender.com"
+        "EXPO_PUBLIC_ROAMFX_URL": "http://192.168.1.19:3000"
+      }
+    },
+    "hosted-preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_ROAMFX_URL": "https://roamfx-frontend.pages.dev"
       }
     },
     "production": {

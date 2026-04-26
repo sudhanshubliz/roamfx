@@ -19,13 +19,14 @@
     "android": {
       "package": "app.roamfx.mobile"
     },
-    "extra": {
-      "eas": {
-        "projectId": "e5509c45-1086-46bf-ad7a-39cc89f72f59"
-      }
-    },
     "plugins": [
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0b0c60e3-a316-44af-92e6-f68b893f31f7"
+      }
+    },
+    "owner": "sudhanshubliz"
   }
 }
