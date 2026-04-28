@@ -15,11 +15,15 @@ import {
   Home,
   Info,
   List,
+  LocateFixed,
   Map,
+  MapPin,
   Menu,
+  Navigation,
   Plane,
   ReceiptText,
   RefreshCcw,
+  Search,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
@@ -33,6 +37,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 type PartnerRate = {
+  id: string;
   name: string;
   initials: string;
   color: string;
@@ -44,15 +49,29 @@ type PartnerRate = {
   rating: number;
   reviews: number;
   branches: string;
+  city: string;
+  area: string;
+  lat: number;
+  lng: number;
+  phone: string;
+  license: string;
   tag?: string;
 };
 
 const partners: PartnerRate[] = [
-  { name: "Global Forex Pvt. Ltd.", initials: "FX", color: "bg-teal-700", receiveBonus: 12.4, rate: 91.32, fee: 220, delivery: "Airport pickup", slot: "T3, DEL · Today, 4:00 PM", rating: 4.8, reviews: 128, branches: "15+ branches", tag: "Best Value" },
-  { name: "Travel Currency Exchange", initials: "TC", color: "bg-blue-600", receiveBonus: 6.3, rate: 90.83, fee: 780, delivery: "Home delivery", slot: "Tomorrow · 10:00 AM - 1:00 PM", rating: 4.6, reviews: 96, branches: "20+ branches" },
-  { name: "World Forex Services", initials: "WT", color: "bg-orange-600", receiveBonus: 1.5, rate: 90.43, fee: 1150, delivery: "Airport pickup", slot: "T3, DEL · Tomorrow, 9:00 AM", rating: 4.5, reviews: 74, branches: "10+ branches" },
-  { name: "Unimoni India", initials: "UI", color: "bg-emerald-700", receiveBonus: 0, rate: 89.99, fee: 1620, delivery: "Branch pickup", slot: "Connaught Place · Today, 5:30 PM", rating: 4.4, reviews: 63, branches: "25+ branches" }
+  { id: "global-forex", name: "Global Forex Pvt. Ltd.", initials: "FX", color: "bg-teal-700", receiveBonus: 12.4, rate: 91.32, fee: 220, delivery: "Airport pickup", slot: "T3, DEL · Today, 4:00 PM", rating: 4.8, reviews: 128, branches: "15+ branches", city: "Delhi", area: "T3, Delhi Airport", lat: 28.5562, lng: 77.1, phone: "+911145551010", license: "RBI AD-I", tag: "Best Value" },
+  { id: "travel-currency", name: "Travel Currency Exchange", initials: "TC", color: "bg-blue-600", receiveBonus: 6.3, rate: 90.83, fee: 780, delivery: "Home delivery", slot: "Connaught Place · Tomorrow, 10:00 AM - 1:00 PM", rating: 4.6, reviews: 96, branches: "20+ branches", city: "Delhi", area: "Connaught Place, Delhi", lat: 28.6315, lng: 77.2167, phone: "+911145552020", license: "RBI FFMC" },
+  { id: "world-forex", name: "World Forex Services", initials: "WT", color: "bg-orange-600", receiveBonus: 1.5, rate: 90.43, fee: 1150, delivery: "Airport pickup", slot: "Aerocity · Tomorrow, 9:00 AM", rating: 4.5, reviews: 74, branches: "10+ branches", city: "Delhi", area: "Aerocity, Delhi", lat: 28.5483, lng: 77.1217, phone: "+911145553030", license: "RBI AD-II" },
+  { id: "unimoni-india", name: "Unimoni India", initials: "UI", color: "bg-emerald-700", receiveBonus: 0, rate: 89.99, fee: 1620, delivery: "Branch pickup", slot: "BKC · Today, 5:30 PM", rating: 4.4, reviews: 63, branches: "25+ branches", city: "Mumbai", area: "Bandra Kurla Complex, Mumbai", lat: 19.0669, lng: 72.8675, phone: "+912245551010", license: "Travel forex partner" }
 ];
+
+const cityCoordinates: Record<string, { lat: number; lng: number; label: string }> = {
+  delhi: { lat: 28.6139, lng: 77.209, label: "Delhi NCR" },
+  "delhi ncr": { lat: 28.6139, lng: 77.209, label: "Delhi NCR" },
+  mumbai: { lat: 19.076, lng: 72.8777, label: "Mumbai" },
+  bengaluru: { lat: 12.9716, lng: 77.5946, label: "Bengaluru" },
+  bangalore: { lat: 12.9716, lng: 77.5946, label: "Bengaluru" }
+};
 
 const navItems = [
   { label: "Home", icon: Home, href: "/" },
@@ -62,16 +81,60 @@ const navItems = [
   { label: "More", icon: SlidersHorizontal, href: "/compliance" }
 ];
 
+function distanceKm(from: { lat: number; lng: number }, to: { lat: number; lng: number }) {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const earthKm = 6371;
+  const dLat = toRad(to.lat - from.lat);
+  const dLng = toRad(to.lng - from.lng);
+  const lat1 = toRad(from.lat);
+  const lat2 = toRad(to.lat);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * earthKm * Math.asin(Math.sqrt(h));
+}
+
 export default function HomePage() {
   const [amount, setAmount] = useState(100000);
   const [view, setView] = useState<"list" | "map">("list");
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedId, setSelectedId] = useState("global-forex");
   const [fromCountry, setFromCountry] = useState("India");
   const [toCurrency, setToCurrency] = useState("EUR");
-  const selected = partners[selectedIndex];
+  const [manualCity, setManualCity] = useState("Delhi");
+  const [location, setLocation] = useState(cityCoordinates.delhi);
+  const [locationStatus, setLocationStatus] = useState("Showing verified partners near Delhi NCR.");
+  const nearbyPartners = useMemo(() => partners
+    .map((partner) => ({ ...partner, distanceKm: distanceKm(location, partner) }))
+    .sort((a, b) => a.distanceKm - b.distanceKm), [location]);
+  const selected = nearbyPartners.find((partner) => partner.id === selectedId) ?? nearbyPartners[0];
   const receive = useMemo(() => amount / selected.rate, [amount, selected.rate]);
   const total = amount + selected.fee;
-  const saving = Math.max(900, Math.round((partners[partners.length - 1].rate - selected.rate) * -amount / selected.rate));
+  const saving = Math.max(900, Math.round((nearbyPartners[nearbyPartners.length - 1].rate - selected.rate) * -amount / selected.rate));
+
+  function applyCitySearch() {
+    const match = cityCoordinates[manualCity.trim().toLowerCase()];
+    if (!match) {
+      setLocationStatus("Demo location API supports Delhi, Mumbai, and Bengaluru. Showing Delhi NCR partners.");
+      setLocation(cityCoordinates.delhi);
+      return;
+    }
+    setLocation(match);
+    setLocationStatus(`Nearby partner API loaded verified forex partners around ${match.label}.`);
+  }
+
+  function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      setLocationStatus("Browser location is unavailable. Enter city manually.");
+      return;
+    }
+    setLocationStatus("Requesting browser location permission...");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({ lat: position.coords.latitude, lng: position.coords.longitude, label: "your current location" });
+        setLocationStatus("Nearby partner API ranked verified partners by your current browser location.");
+      },
+      () => setLocationStatus("Location permission denied or unavailable. Enter city manually."),
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top_right,rgba(12,115,120,0.10),transparent_34%),linear-gradient(180deg,#fbfaf7_0%,#f8f6f0_100%)] pb-28 text-foreground">
@@ -145,6 +208,25 @@ export default function HomePage() {
             <Button variant="outline" className="bg-white"><Filter size={17} /> Filters</Button>
           </div>
 
+          <section className="mt-4 grid gap-3 rounded-lg border bg-white p-4 shadow-sm md:grid-cols-[1fr_auto_auto] md:items-center">
+            <label className="grid gap-1 text-sm">
+              <span className="font-medium">Search nearby forex partners</span>
+              <span className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
+                <Search size={16} className="text-muted-foreground" />
+                <input
+                  value={manualCity}
+                  onChange={(event) => setManualCity(event.target.value)}
+                  onKeyDown={(event) => { if (event.key === "Enter") applyCitySearch(); }}
+                  className="min-w-0 flex-1 bg-transparent outline-none"
+                  placeholder="Delhi, Mumbai, Bengaluru"
+                />
+              </span>
+            </label>
+            <Button type="button" onClick={applyCitySearch} variant="outline" className="bg-white">Search city</Button>
+            <Button type="button" onClick={useCurrentLocation} className="bg-gradient-to-b from-teal-700 to-teal-900"><LocateFixed size={17} /> Use my location</Button>
+            <p className="text-xs text-muted-foreground md:col-span-3">{locationStatus} Map results are mock/demo data now; Google Maps provider keys can replace this adapter later.</p>
+          </section>
+
           {view === "list" ? (
             <section className="mt-4 overflow-hidden rounded-lg border bg-white shadow-sm">
               <div className="hidden grid-cols-[1.45fr_0.75fr_0.8fr_0.85fr_1.05fr_0.7fr] gap-3 border-b px-4 py-3 text-sm text-muted-foreground md:grid">
@@ -156,24 +238,73 @@ export default function HomePage() {
                 <span>Add funds</span>
               </div>
               <div className="divide-y">
-                {partners.map((partner, index) => (
+                {nearbyPartners.map((partner) => (
                   <PartnerRow
-                    key={partner.name}
+                    key={partner.id}
                     partner={partner}
-                    active={index === selectedIndex}
+                    active={partner.id === selected.id}
                     receive={amount / partner.rate}
                     total={amount + partner.fee}
-                    onSelect={() => setSelectedIndex(index)}
+                    onSelect={() => setSelectedId(partner.id)}
                   />
                 ))}
               </div>
             </section>
           ) : (
-            <section className="mt-4 grid min-h-[380px] place-items-center rounded-lg border bg-white p-6 text-center shadow-sm">
-              <div>
-                <Map className="mx-auto size-12 text-teal-700" />
-                <h2 className="mt-3 text-xl font-semibold">Map-ready partner discovery</h2>
-                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">Google Maps or Mapbox can plug into this panel. Nearby verified partners, pickup counters, and delivery zones will appear here.</p>
+            <section className="mt-4 grid gap-4 rounded-lg border bg-white p-4 shadow-sm lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="relative min-h-[420px] overflow-hidden rounded-lg border bg-[radial-gradient(circle_at_25%_30%,rgba(20,184,166,0.22),transparent_20%),radial-gradient(circle_at_70%_62%,rgba(245,158,11,0.20),transparent_18%),linear-gradient(135deg,#ecfeff,#f8fafc)]">
+                <div className="absolute inset-x-8 top-1/2 h-px bg-teal-700/20" />
+                <div className="absolute inset-y-8 left-1/2 w-px bg-teal-700/20" />
+                <div className="absolute left-8 top-8 rounded-full bg-white/90 px-3 py-2 text-xs font-medium shadow-sm">
+                  <MapPin size={14} className="mr-1 inline text-teal-700" /> {location.label}
+                </div>
+                {nearbyPartners.map((partner, index) => (
+                  <button
+                    key={partner.id}
+                    onClick={() => setSelectedId(partner.id)}
+                    className={`absolute rounded-full border-4 border-white shadow-lg transition hover:scale-110 ${partner.id === selected.id ? "bg-teal-800 text-white" : "bg-white text-teal-800"}`}
+                    style={{ left: `${22 + (index * 17) % 58}%`, top: `${24 + (index * 19) % 52}%` }}
+                    aria-label={`Select ${partner.name}`}
+                  >
+                    <span className="grid size-12 place-items-center rounded-full font-bold">{partner.initials}</span>
+                  </button>
+                ))}
+                <div className="absolute bottom-4 left-4 right-4 rounded-lg border bg-white/95 p-4 shadow-sm backdrop-blur">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-semibold">{selected.name}</div>
+                      <div className="mt-1 text-sm text-muted-foreground">{selected.area} · {selected.distanceKm.toFixed(1)} km away</div>
+                    </div>
+                    <Badge className="bg-emerald-100 text-emerald-800">Verified</Badge>
+                  </div>
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
+                    <MiniMapStat label="Rate" value={`₹${selected.rate}`} />
+                    <MiniMapStat label="Rating" value={`${selected.rating}★`} />
+                    <MiniMapStat label="Fee" value={`₹${selected.fee}`} />
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3">
+                <div>
+                  <h2 className="text-xl font-semibold">Nearby verified forex exchange</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">Mock location API ranks authorised partners by distance, rate, delivery mode, rating, and fee. Transactions still go through partner-led booking and KYC.</p>
+                </div>
+                {nearbyPartners.map((partner) => (
+                  <article key={partner.id} className={`rounded-lg border p-3 ${partner.id === selected.id ? "border-teal-600 bg-teal-50/50" : "bg-white"}`}>
+                    <button onClick={() => setSelectedId(partner.id)} className="w-full text-left">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="font-semibold">{partner.name}</div>
+                        <Badge variant="outline">{partner.distanceKm.toFixed(1)} km</Badge>
+                      </div>
+                      <div className="mt-1 text-sm text-muted-foreground">{partner.license} · {partner.delivery} · {partner.slot}</div>
+                    </button>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button size="sm" onClick={() => setSelectedId(partner.id)}>Select</Button>
+                      <Button size="sm" variant="outline" asChild><a href={`tel:${partner.phone}`}>Call</a></Button>
+                      <Button size="sm" variant="outline" asChild><a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${partner.name}, ${partner.area}`)}`}><Navigation size={14} /> Directions</a></Button>
+                    </div>
+                  </article>
+                ))}
               </div>
             </section>
           )}
@@ -347,4 +478,8 @@ function BottomNav() {
 
 function MiniStat({ value, label }: { value: string; label: string }) {
   return <div className="rounded-lg bg-white/10 px-2 py-3"><div className="text-xl font-semibold">{value}</div><div className="mt-1 text-white/70">{label}</div></div>;
+}
+
+function MiniMapStat({ label, value }: { label: string; value: string }) {
+  return <div className="rounded-md bg-muted/60 p-2"><div className="text-xs text-muted-foreground">{label}</div><div className="font-semibold">{value}</div></div>;
 }

@@ -44,6 +44,18 @@ export type Partner = {
   openingHours: string;
   contactPhone?: string;
   address?: string;
+  latitude?: number;
+  longitude?: number;
+};
+
+export type NearbyPartner = Partner & {
+  distanceKm: number;
+  bestSellRate: number;
+  serviceFee: number;
+  availableAmount: number;
+  freshness: string;
+  fulfilmentMode: string;
+  suspicious: boolean;
 };
 
 export type Booking = {
@@ -141,7 +153,9 @@ export const demoPartners: Partner[] = [
     supportsDigitalPayment: true,
     openingHours: "08:00 - 22:00",
     contactPhone: "+911145551010",
-    address: "T3, Delhi Airport"
+    address: "T3, Delhi Airport",
+    latitude: 28.5562,
+    longitude: 77.1
   },
   {
     id: "travel-currency",
@@ -156,7 +170,9 @@ export const demoPartners: Partner[] = [
     supportsDigitalPayment: true,
     openingHours: "09:00 - 20:00",
     contactPhone: "+911145552020",
-    address: "Connaught Place, Delhi"
+    address: "Connaught Place, Delhi",
+    latitude: 28.6315,
+    longitude: 77.2167
   },
   {
     id: "world-forex",
@@ -171,7 +187,9 @@ export const demoPartners: Partner[] = [
     supportsDigitalPayment: true,
     openingHours: "09:30 - 21:00",
     contactPhone: "+911145553030",
-    address: "Aerocity, Delhi"
+    address: "Aerocity, Delhi",
+    latitude: 28.5483,
+    longitude: 77.1217
   },
   {
     id: "unimoni-india",
@@ -186,9 +204,30 @@ export const demoPartners: Partner[] = [
     supportsDigitalPayment: true,
     openingHours: "10:00 - 19:00",
     contactPhone: "+912245551010",
-    address: "Bandra Kurla Complex, Mumbai"
+    address: "Bandra Kurla Complex, Mumbai",
+    latitude: 19.0669,
+    longitude: 72.8675
   }
 ];
+
+const cityCoordinates: Record<string, { latitude: number; longitude: number }> = {
+  delhi: { latitude: 28.6139, longitude: 77.209 },
+  "delhi ncr": { latitude: 28.6139, longitude: 77.209 },
+  mumbai: { latitude: 19.076, longitude: 72.8777 },
+  bengaluru: { latitude: 12.9716, longitude: 77.5946 },
+  bangalore: { latitude: 12.9716, longitude: 77.5946 }
+};
+
+function distanceKm(from: { latitude: number; longitude: number }, to: { latitude: number; longitude: number }) {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const earthKm = 6371;
+  const dLat = toRad(to.latitude - from.latitude);
+  const dLng = toRad(to.longitude - from.longitude);
+  const lat1 = toRad(from.latitude);
+  const lat2 = toRad(to.latitude);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * earthKm * Math.asin(Math.sqrt(h));
+}
 
 const rateMatrix: Record<string, Array<Omit<RateView, "id" | "sourceCurrency" | "targetCurrency" | "lastUpdatedAt" | "freshness">>> = {
   USD: [
@@ -335,6 +374,33 @@ async function mockApi<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
 
   if (url.pathname === "/api/partners") return envelope(demoPartners, "Partners loaded").data as T;
+  if (url.pathname === "/api/partners/nearby") {
+    const currency = (url.searchParams.get("currency") ?? "EUR").toUpperCase();
+    const city = (url.searchParams.get("city") ?? "Delhi").toLowerCase();
+    const latitude = Number(url.searchParams.get("lat"));
+    const longitude = Number(url.searchParams.get("lng"));
+    const origin = Number.isFinite(latitude) && Number.isFinite(longitude)
+      ? { latitude, longitude }
+      : cityCoordinates[city] ?? cityCoordinates.delhi;
+    const rates = rateMatrix[currency] ?? rateMatrix.EUR;
+    const rows = demoPartners
+      .filter((partner) => partner.verificationStatus === "VERIFIED")
+      .map((partner, index) => {
+        const rate = rates.find((item) => item.partnerId === partner.id) ?? rates[index % rates.length];
+        return {
+          ...partner,
+          distanceKm: partner.latitude && partner.longitude ? distanceKm(origin, { latitude: partner.latitude, longitude: partner.longitude }) : 0,
+          bestSellRate: rate.sellRate,
+          serviceFee: rate.serviceFee,
+          availableAmount: rate.availableAmount,
+          freshness: index === 0 ? "just now" : `${7 + index * 4} min ago`,
+          fulfilmentMode: partner.supportsDelivery ? "Home delivery / pickup" : "Store or airport pickup",
+          suspicious: rate.suspicious
+        };
+      })
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+    return envelope(rows, "Nearby verified partners loaded").data as T;
+  }
   if (url.pathname === "/api/bookings/my") return envelope(demoBookings, "Bookings loaded").data as T;
   if (url.pathname === "/api/ai/travel-money-plan" && method === "POST") return envelope(planner(parseBody()), "Plan generated").data as T;
 
