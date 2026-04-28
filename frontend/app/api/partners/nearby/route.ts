@@ -94,9 +94,11 @@ export function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const currency = (searchParams.get("currency") ?? "EUR").toUpperCase();
   const city = (searchParams.get("city") ?? "Delhi").toLowerCase();
-  const lat = Number(searchParams.get("lat"));
-  const lng = Number(searchParams.get("lng"));
-  const origin = Number.isFinite(lat) && Number.isFinite(lng)
+  const latParam = searchParams.get("lat");
+  const lngParam = searchParams.get("lng");
+  const lat = latParam === null ? NaN : Number(latParam);
+  const lng = lngParam === null ? NaN : Number(lngParam);
+  const origin = latParam !== null && lngParam !== null && Number.isFinite(lat) && Number.isFinite(lng)
     ? { latitude: lat, longitude: lng }
     : cityCoordinates[city] ?? cityCoordinates.delhi;
 

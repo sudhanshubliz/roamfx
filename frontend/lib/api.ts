@@ -377,9 +377,11 @@ async function mockApi<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (url.pathname === "/api/partners/nearby") {
     const currency = (url.searchParams.get("currency") ?? "EUR").toUpperCase();
     const city = (url.searchParams.get("city") ?? "Delhi").toLowerCase();
-    const latitude = Number(url.searchParams.get("lat"));
-    const longitude = Number(url.searchParams.get("lng"));
-    const origin = Number.isFinite(latitude) && Number.isFinite(longitude)
+    const latParam = url.searchParams.get("lat");
+    const lngParam = url.searchParams.get("lng");
+    const latitude = latParam === null ? NaN : Number(latParam);
+    const longitude = lngParam === null ? NaN : Number(lngParam);
+    const origin = latParam !== null && lngParam !== null && Number.isFinite(latitude) && Number.isFinite(longitude)
       ? { latitude, longitude }
       : cityCoordinates[city] ?? cityCoordinates.delhi;
     const rates = rateMatrix[currency] ?? rateMatrix.EUR;
