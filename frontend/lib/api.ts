@@ -66,7 +66,18 @@ export type Booking = {
   sourceCurrency: string;
   targetCurrency: string;
   sourceAmount: number;
+  targetAmountEstimate?: number;
+  lockedRate?: number;
+  midMarketRate?: number;
+  spreadAmount?: number;
+  markupAmount?: number;
+  serviceFee?: number;
+  taxes?: number;
+  fulfilmentFee?: number;
   totalPayable: number;
+  payoutAmount?: number;
+  settlementState?: "NOT_REQUIRED" | "PENDING" | "INITIATED" | "SETTLED" | "FAILED";
+  cancellationOutcome?: "NO_CHARGE" | "FEE_APPLIED" | "REFUND_PENDING" | "REFUNDED" | "NOT_ALLOWED";
   status:
     | "CREATED"
     | "KYC_PENDING"
@@ -77,6 +88,25 @@ export type Booking = {
     | "CANCELLED"
     | "EXPIRED";
   rateLockExpiresAt: string;
+  payoutEta?: string;
+};
+
+export type QuoteBreakdown = {
+  lockedRate: number;
+  midMarketRate: number;
+  fxAmount: number;
+  spreadAmount: number;
+  markupAmount: number;
+  serviceFee: number;
+  taxes: number;
+  fulfilmentFee: number;
+  totalPayable: number;
+  payoutAmount: number;
+  kycRequired: boolean;
+  cashAllowed: boolean;
+  rateLockExpiresAt: string;
+  payoutEta: string;
+  complianceNotice: string;
 };
 
 export type TravelMoneyPlan = {
@@ -271,6 +301,15 @@ const demoBookings: Booking[] = [
     targetCurrency: "USD",
     sourceAmount: 100000,
     totalPayable: 100220,
+    targetAmountEstimate: 1198.46,
+    lockedRate: 83.44,
+    midMarketRate: 83.12,
+    spreadAmount: 384,
+    markupAmount: 410,
+    serviceFee: 220,
+    taxes: 39.6,
+    fulfilmentFee: 0,
+    settlementState: "NOT_REQUIRED",
     status: "KYC_PENDING",
     rateLockExpiresAt: new Date(Date.now() + 18 * 60 * 1000).toISOString()
   },
@@ -283,6 +322,15 @@ const demoBookings: Booking[] = [
     targetCurrency: "EUR",
     sourceAmount: 75000,
     totalPayable: 75780,
+    targetAmountEstimate: 826.72,
+    lockedRate: 90.83,
+    midMarketRate: 90.9,
+    spreadAmount: 58,
+    markupAmount: 306,
+    serviceFee: 780,
+    taxes: 140.4,
+    fulfilmentFee: 250,
+    settlementState: "NOT_REQUIRED",
     status: "PARTNER_REVIEW",
     rateLockExpiresAt: new Date(Date.now() + 26 * 60 * 1000).toISOString()
   }
@@ -319,6 +367,45 @@ function planner(body: Record<string, unknown>): TravelMoneyPlan {
     confidenceScore: 0.86,
     disclaimer: "RoamFX provides preparation guidance only. Rates and rules may change; transactions must be completed through verified authorised partners subject to applicable laws, KYC, and partner acceptance.",
     provider: "MockTravelMoneyAdvisor"
+  };
+}
+
+function quoteBreakdown(body: Record<string, unknown>): QuoteBreakdown {
+  const bookingType = String(body.bookingType ?? "BUY_FOREX");
+  const amount = Number(body.sourceAmount ?? 1000);
+  const currency = String(body.sourceCurrency ?? "EUR").toUpperCase();
+  const fulfilmentMode = String(body.fulfilmentMode ?? "PICKUP");
+  const paymentMode = String(body.paymentMode ?? "UPI");
+  const rate = rateMatrix[currency]?.[0] ?? rateMatrix.EUR[0];
+  const lockedRate = bookingType === "SELL_LEFTOVER_FOREX" ? rate.buyRate : rate.sellRate;
+  const fxAmount = Number((amount * lockedRate).toFixed(2));
+  const spreadAmount = Number((amount * Math.abs(lockedRate - rate.midMarketRate)).toFixed(2));
+  const markupAmount = Number((fxAmount * 0.0045).toFixed(2));
+  const serviceFee = rate.serviceFee;
+  const taxes = Number((serviceFee * 0.18).toFixed(2));
+  const fulfilmentFee = fulfilmentMode === "DELIVERY" ? 250 : 0;
+  const totalPayable = bookingType === "BUY_FOREX" ? Number((fxAmount + serviceFee + taxes + fulfilmentFee).toFixed(2)) : 0;
+  const payoutAmount = bookingType === "SELL_LEFTOVER_FOREX" ? Number(Math.max(0, fxAmount - serviceFee - taxes - fulfilmentFee).toFixed(2)) : 0;
+  const thresholdBase = bookingType === "BUY_FOREX" ? totalPayable : fxAmount;
+  const cashAllowed = paymentMode !== "CASH" || thresholdBase < 50000;
+  return {
+    lockedRate,
+    midMarketRate: rate.midMarketRate,
+    fxAmount,
+    spreadAmount,
+    markupAmount,
+    serviceFee,
+    taxes,
+    fulfilmentFee,
+    totalPayable,
+    payoutAmount,
+    kycRequired: thresholdBase >= 50000 || bookingType === "SELL_LEFTOVER_FOREX",
+    cashAllowed,
+    rateLockExpiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+    payoutEta: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+    complianceNotice: cashAllowed
+      ? "Quote is indicative until rate lock. All exchange flows must be completed through verified authorised partners."
+      : "INR equivalent >= 50000 cannot use cash. Select UPI, card, or bank transfer."
   };
 }
 
@@ -404,6 +491,35 @@ async function mockApi<T>(path: string, init: RequestInit = {}): Promise<T> {
     return envelope(rows, "Nearby verified partners loaded").data as T;
   }
   if (url.pathname === "/api/bookings/my") return envelope(demoBookings, "Bookings loaded").data as T;
+  if (url.pathname === "/api/bookings/quote" && method === "POST") return envelope(quoteBreakdown(parseBody()), "Quote generated").data as T;
+  if (url.pathname === "/api/bookings" && method === "POST") {
+    const body = parseBody();
+    const partner = demoPartners.find((item) => item.id === body.partnerId) ?? demoPartners[0];
+    const quote = quoteBreakdown(body);
+    return envelope({
+      id: `bkg_${Date.now()}`,
+      bookingReference: `RFX-${String(Date.now()).slice(-5)}`,
+      partner,
+      bookingType: body.bookingType ?? "BUY_FOREX",
+      sourceCurrency: body.sourceCurrency ?? "EUR",
+      targetCurrency: body.targetCurrency ?? "INR",
+      sourceAmount: Number(body.sourceAmount ?? 1000),
+      targetAmountEstimate: quote.fxAmount,
+      lockedRate: quote.lockedRate,
+      midMarketRate: quote.midMarketRate,
+      spreadAmount: quote.spreadAmount,
+      markupAmount: quote.markupAmount,
+      serviceFee: quote.serviceFee,
+      taxes: quote.taxes,
+      fulfilmentFee: quote.fulfilmentFee,
+      totalPayable: quote.totalPayable,
+      payoutAmount: quote.payoutAmount,
+      settlementState: body.bookingType === "SELL_LEFTOVER_FOREX" ? "PENDING" : "NOT_REQUIRED",
+      status: quote.kycRequired ? "KYC_PENDING" : "RATE_LOCKED",
+      rateLockExpiresAt: quote.rateLockExpiresAt,
+      payoutEta: quote.payoutEta
+    }, "Booking created").data as T;
+  }
   if (url.pathname === "/api/ai/travel-money-plan" && method === "POST") return envelope(planner(parseBody()), "Plan generated").data as T;
 
   return envelope(null as T, "Mock endpoint not implemented").data;

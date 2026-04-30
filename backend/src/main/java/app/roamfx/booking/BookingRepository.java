@@ -10,4 +10,5 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
   Page<Booking> findByTravellerIdOrderByCreatedAtDesc(UUID travellerId, Pageable pageable);
   Page<Booking> findByPartnerIdOrderByCreatedAtDesc(UUID partnerId, Pageable pageable);
   Optional<Booking> findByIdAndTravellerId(UUID id, UUID travellerId);
+  Optional<Booking> findByIdempotencyKey(String idempotencyKey);
 }

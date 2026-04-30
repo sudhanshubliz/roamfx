@@ -10,6 +10,10 @@ public final class Enums {
   public enum PaymentMode { CASH, UPI, CARD, BANK_TRANSFER }
   public enum FulfilmentMode { PICKUP, DELIVERY, STORE_VISIT }
   public enum BookingStatus { DRAFT, PENDING_KYC, RATE_LOCKED, PARTNER_REVIEW, CONFIRMED, READY_FOR_PICKUP, COMPLETED, CANCELLED, EXPIRED, REJECTED }
+  public enum SettlementState { NOT_REQUIRED, PENDING, INITIATED, SETTLED, FAILED }
+  public enum CancellationOutcome { NO_CHARGE, FEE_APPLIED, REFUND_PENDING, REFUNDED, NOT_ALLOWED }
+  public enum PartnerOnboardingStatus { DRAFT, SUBMITTED, KYB_REVIEW, APPROVED, REJECTED, SUSPENDED }
+  public enum PartnerStaffRole { OWNER, MANAGER, CASHIER, COMPLIANCE }
   public enum DocumentType { PASSPORT, PAN, VISA, FLIGHT_TICKET, ADDRESS_PROOF, CURRENCY_DECLARATION_FORM, OTHER }
   public enum DocumentStatus { UPLOADED, UNDER_REVIEW, VERIFIED, REJECTED }
   public enum CommunityPostType { TIP, QUESTION, LEFTOVER_CURRENCY_REQUEST, RATE_ALERT }
