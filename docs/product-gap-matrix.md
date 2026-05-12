@@ -29,11 +29,16 @@ RoamFX is positioned as a compliance-first travel forex marketplace. The highest
 - Sell-back payout amount, payout ETA, and settlement state fields.
 - Partner onboarding and branch inventory schema and APIs.
 - Google Places nearby discovery endpoint remains informational only and does not create unverified partner booking paths.
+- Traveller dashboard is now an API-backed quote-to-book workspace with rate comparison, full price breakdown, KYC/cash signals, and latest booking timeline.
+- Traveller documents, profile, and partners pages now provide functional workflows instead of static `PageTemplate` surfaces.
+- Added DTO-backed `/api/documents/my` and `/api/partner/operations/summary` surfaces for production migration away from frontend mock data.
 
 ## Remaining Critical Gaps
 
 - Staff RBAC/maker-checker approval workflow.
 - Persistent rules engine for configurable policy thresholds.
 - Settlement ledger/export generation.
-- Frontend booking timeline wired to the new backend breakdown fields.
 - Automated E2E coverage for the complete traveller quote-to-book journey.
+- Production payment intent abstraction for Razorpay/Stripe without processing real forex payments until compliance approval.
+- Real notification provider for KYC, rate-lock expiry, partner SLA, and settlement events.
+- Partner dashboard still needs to consume the new operations summary and replace remaining static dashboard arrays.

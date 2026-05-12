@@ -48,6 +48,18 @@ export type Partner = {
   longitude?: number;
 };
 
+export type KycDocumentView = {
+  id: string;
+  bookingId?: string;
+  documentType: "PASSPORT" | "PAN" | "VISA" | "FLIGHT_TICKET" | "ADDRESS_PROOF" | "CURRENCY_DECLARATION_FORM" | "OTHER";
+  fileName: string;
+  fileUrl: string;
+  verificationStatus: "UPLOADED" | "UNDER_REVIEW" | "VERIFIED" | "REJECTED";
+  rejectionReason?: string;
+  createdAt: string;
+  nextAction: string;
+};
+
 export type NearbyPartner = Partner & {
   distanceKm: number;
   bestSellRate: number;
@@ -336,6 +348,29 @@ const demoBookings: Booking[] = [
   }
 ];
 
+const demoDocuments: KycDocumentView[] = [
+  {
+    id: "doc_passport",
+    bookingId: "bkg_10482",
+    documentType: "PASSPORT",
+    fileName: "passport-metadata.pdf",
+    fileUrl: "local://passport-metadata.pdf",
+    verificationStatus: "UNDER_REVIEW",
+    createdAt: now(),
+    nextAction: "Partner compliance team is reviewing the passport metadata."
+  },
+  {
+    id: "doc_pan",
+    bookingId: "bkg_10482",
+    documentType: "PAN",
+    fileName: "pan-card-metadata.pdf",
+    fileUrl: "local://pan-card-metadata.pdf",
+    verificationStatus: "UPLOADED",
+    createdAt: now(),
+    nextAction: "Awaiting review. Keep original document ready at pickup."
+  }
+];
+
 function envelope<T>(data: T, message = "OK"): ApiEnvelope<T> {
   return { success: true, message, data, errorCode: null, timestamp: now() };
 }
@@ -491,6 +526,20 @@ async function mockApi<T>(path: string, init: RequestInit = {}): Promise<T> {
     return envelope(rows, "Nearby verified partners loaded").data as T;
   }
   if (url.pathname === "/api/bookings/my") return envelope(demoBookings, "Bookings loaded").data as T;
+  if (url.pathname === "/api/documents/my") return envelope(demoDocuments, "Documents loaded").data as T;
+  if (url.pathname === "/api/documents" && method === "POST") {
+    const body = parseBody();
+    return envelope({
+      id: `doc_${Date.now()}`,
+      bookingId: body.bookingId,
+      documentType: body.documentType ?? "OTHER",
+      fileName: body.fileName ?? "document-metadata.pdf",
+      fileUrl: body.fileUrl ?? "local://document-metadata.pdf",
+      verificationStatus: "UPLOADED",
+      createdAt: now(),
+      nextAction: "Uploaded metadata is queued for partner/admin review."
+    }, "Document metadata uploaded").data as T;
+  }
   if (url.pathname === "/api/bookings/quote" && method === "POST") return envelope(quoteBreakdown(parseBody()), "Quote generated").data as T;
   if (url.pathname === "/api/bookings" && method === "POST") {
     const body = parseBody();

@@ -35,6 +35,9 @@ Goal: make the traveller buying/selling journey trustworthy, transparent, and en
 - Booking timeline tracker.
 - Sell leftover currency quote and payout panel.
 - Document status/action card.
+- API-backed traveller dashboard replacing the previous static dashboard.
+- Functional partner discovery page with list/map mode, filters, trust card, call, and directions actions.
+- Profile workspace for saved travellers, repeat-booking preferences, and reminder settings.
 
 ### Analytics Events
 
@@ -81,6 +84,7 @@ Goal: give authorised forex partners the tools to run daily branch operations.
 - `PUT /api/partner/inventory/{id}`
 - `GET /api/admin/partners/{id}/onboarding`
 - `PUT /api/admin/partners/{id}/onboarding`
+- `GET /api/partner/operations/summary`
 
 ### Frontend Screens/Components
 
