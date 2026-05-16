@@ -6,6 +6,8 @@ import { useState } from "react";
 import { ChevronDown, Globe2, Mail, MapPin, Menu, Phone, Send, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { RoamAI } from "@/components/roam-ai";
 
 const menus = [
   {
@@ -14,7 +16,8 @@ const menus = [
       { href: "/dashboard", label: "Buy Forex" },
       { href: "/sell-leftover", label: "Sell Forex" },
       { href: "/forex-card", label: "Forex Card" },
-      { href: "/rates", label: "Live Rates" }
+      { href: "/rates", label: "Live Rates" },
+      { href: "/checkout", label: "Smart Checkout" }
     ]
   },
   {
@@ -30,6 +33,7 @@ const menus = [
     label: "Travel AI",
     items: [
       { href: "/planner", label: "AI Trip Planner" },
+      { href: "/flight-deals", label: "AI Flight Deals" },
       { href: "/planner", label: "Budget Calculator" },
       { href: "/visa", label: "Visa Checklist" }
     ]
@@ -39,9 +43,10 @@ const menus = [
 export function LovableSiteShell({ children }: { children: React.ReactNode }) {
   return <div className="flex min-h-screen flex-col bg-background">
     <LovableNavbar />
-    <main className="flex-1">{children}</main>
+    <main className="flex-1 pb-14 md:pb-0">{children}</main>
     <LovableFooter />
-    <LovableAIChatbot />
+    <MobileBottomNav />
+    <RoamAI />
   </div>;
 }
 
@@ -78,6 +83,7 @@ function LovableNavbar() {
           </div>
         </div>)}
         <Link href="/study-abroad" className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-secondary">Study Abroad</Link>
+        <Link href="/flight-deals" className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-secondary">Flights</Link>
         <Link href="/blog" className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-secondary">Blog</Link>
         <Link href="/contact" className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-secondary">Contact</Link>
       </nav>
@@ -94,6 +100,7 @@ function LovableNavbar() {
       <div className="mx-auto max-w-7xl space-y-1 px-4 py-3">
         {menus.flatMap((menu) => menu.items).concat([
           { href: "/study-abroad", label: "Study Abroad" },
+          { href: "/flight-deals", label: "Flights" },
           { href: "/blog", label: "Blog" },
           { href: "/contact", label: "Contact" },
           { href: "/dashboard", label: "Dashboard" },
@@ -108,7 +115,7 @@ function LovableNavbar() {
 function LovableFooter() {
   const cols = [
     { title: "Forex Services", links: [{ href: "/dashboard", label: "Buy Forex" }, { href: "/sell-leftover", label: "Sell Forex" }, { href: "/forex-card", label: "Forex Card" }, { href: "/rates", label: "Live Rates" }, { href: "/send-money", label: "Send Money Abroad" }] },
-    { title: "Travel & AI", links: [{ href: "/planner", label: "AI Trip Planner" }, { href: "/visa", label: "Visa Assistance" }, { href: "/study-abroad", label: "Study Abroad" }, { href: "/blog", label: "Travel Guides" }] },
+    { title: "Travel & AI", links: [{ href: "/planner", label: "AI Trip Planner" }, { href: "/flight-deals", label: "AI Flight Deals" }, { href: "/visa", label: "Visa Assistance" }, { href: "/study-abroad", label: "Study Abroad" }, { href: "/blog", label: "Travel Guides" }] },
     { title: "Popular Currencies", links: [{ href: "/rates", label: "USD Rate" }, { href: "/rates", label: "EUR Rate" }, { href: "/rates", label: "GBP Rate" }, { href: "/rates", label: "AED Rate" }] },
     { title: "Popular Cities", links: [{ href: "/partners", label: "Forex in Delhi" }, { href: "/partners", label: "Forex in Mumbai" }, { href: "/partners", label: "Forex in Bengaluru" }, { href: "/partners", label: "Forex in Chennai" }] }
   ];
